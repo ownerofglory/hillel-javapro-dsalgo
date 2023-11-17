@@ -1,6 +1,5 @@
 package ua.ithillel.dsalgo.list;
 
-import java.io.PrintWriter;
 import java.util.Iterator;
 
 public class MySinglyLinkedList<T> implements MyList<T> {

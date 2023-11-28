@@ -1,11 +1,15 @@
 package ua.ithillel.dsalgo;
 
+import ua.ithillel.dsalgo.graph.GraphUtils;
 import ua.ithillel.dsalgo.list.MyArrayList;
 import ua.ithillel.dsalgo.list.MyList;
 import ua.ithillel.dsalgo.list.MySinglyLinkedList;
 import ua.ithillel.dsalgo.model.Person;
 import ua.ithillel.dsalgo.model.Student;
+import ua.ithillel.dsalgo.tree.TreeNode;
+import ua.ithillel.dsalgo.tree.TreeUtils;
 import ua.ithillel.dsalgo.util.ArithmeticUtil;
+import ua.ithillel.dsalgo.util.SearchUtils;
 import ua.ithillel.dsalgo.util.StringUtils;
 
 import java.util.*;
@@ -14,7 +18,68 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Application {
     public static void main(String[] args) {
+        Integer[][] edgeList = new Integer[][] {
+                {0, 1},
+                {1, 2},
+                {1, 4},
+                {2, 5},
+                {4, 5},
+                {4, 3},
+                {5, 8},
+                {5, 6},
+                {6, 7}
+        };
 
+        final Map<Integer, List<Integer>> integerListMap = GraphUtils.edgeListToAdjacency(edgeList);
+
+        System.out.println(GraphUtils.depthFirst(integerListMap, 0));
+
+
+        Map<String, List<String>> graph = new HashMap<>();
+        graph.put("A", List.of("B", "D", "E"));
+        graph.put("B", List.of("D", "C"));
+        graph.put("C", List.of());
+        graph.put("D", List.of("C", "E", "A"));
+        graph.put("E", List.of());
+
+        System.out.println("A: " + GraphUtils.depthFirst(graph, "A"));
+        System.out.println("B: " + GraphUtils.depthFirst(graph, "B"));
+        System.out.println("C: " + GraphUtils.depthFirst(graph, "C"));
+        System.out.println("E: " + GraphUtils.depthFirst(graph, "E"));
+
+
+
+
+        final TreeNode<String> a = new TreeNode<>("A");
+        final TreeNode<String> b = new TreeNode<>("B");
+        final TreeNode<String> c = new TreeNode<>("C");
+        final TreeNode<String> d = new TreeNode<>("D");
+        final TreeNode<String> e = new TreeNode<>("E");
+        final TreeNode<String> f = new TreeNode<>("F");
+
+        a.setLeft(b);
+        a.setRight(c);
+
+        b.setLeft(d);
+
+        c.setLeft(e);
+        c.setRight(f);
+
+        final List<String> strings = TreeUtils.depthFirst(a);
+        final List<String> stringsRec = TreeUtils.depthFirstRec(a);
+        final List<String> strings2 = TreeUtils.breadthFirst(a);
+
+        for (String s :
+                a) {
+            System.out.printf("%s ", s);
+        }
+
+        int[] intArr = {1, 4, 5,7 ,8, 10};
+        final int i1 = SearchUtils.binarySearch(intArr, 7, 0, intArr.length - 1);
+        final int i2 = SearchUtils.binarySearch(intArr, 1, 0, intArr.length - 1);
+        final int i3 = SearchUtils.binarySearch(intArr, 10, 0, intArr.length - 1);
+        final int i4 = SearchUtils.binarySearch(intArr, 15, 0, intArr.length - 1);
+        final int i5 = SearchUtils.binarySearch(intArr, 0, 0, intArr.length - 1);
 
 
         final Student vasyl = new Student("Vasyl", 21, 8.9);

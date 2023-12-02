@@ -7,6 +7,11 @@ public class Student implements Comparable<Student> {
     private int age;
     private double gpa;
 
+
+    public Student() {
+
+    }
+
     public Student(String name, int age) {
         this.name = name;
         this.age = age;

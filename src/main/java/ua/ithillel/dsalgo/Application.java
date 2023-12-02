@@ -1,9 +1,14 @@
 package ua.ithillel.dsalgo;
 
+import ua.ithillel.dsalgo.container.Container;
+import ua.ithillel.dsalgo.container.NumberContainer;
+import ua.ithillel.dsalgo.container.NumberUtils;
+import ua.ithillel.dsalgo.func.MyFunc;
 import ua.ithillel.dsalgo.graph.GraphUtils;
 import ua.ithillel.dsalgo.list.MyArrayList;
 import ua.ithillel.dsalgo.list.MyList;
 import ua.ithillel.dsalgo.list.MySinglyLinkedList;
+import ua.ithillel.dsalgo.model.Graduate;
 import ua.ithillel.dsalgo.model.Person;
 import ua.ithillel.dsalgo.model.Student;
 import ua.ithillel.dsalgo.tree.TreeNode;
@@ -15,9 +20,191 @@ import ua.ithillel.dsalgo.util.StringUtils;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Application {
-    public static void main(String[] args) {
+
+    private static void printString(Container<String> container) throws Exception {
+        final String value = container.getValue();
+        System.out.println(value);
+    }
+
+    private static void addStudentsToList(List<? super Student> s) {
+        s.add(new Student("John", 40));
+        s.add(new Graduate("John", 40));
+    }
+
+    private static <T> T convertStudent(Student student, Function<Student, T> converter) {
+        return converter.apply(student);
+    }
+
+    private static List<Student> filterStudents(List<Student> students, Predicate<Student> condition) {
+        List<Student> result =  new ArrayList<>();
+
+        for (Student s :
+                students) {
+            if (condition.test(s)) {
+                result.add(s);
+            }
+        }
+
+        return result;
+    }
+
+    private static void printStudent(Student s) {
+        System.out.println(s);
+    }
+
+    public static void main(String[] args) throws Exception {
+        final Student vasyl = new Student("Vasyl", 21, 8.9);
+        final Student anna = new Student("Anna", 22, 4.6);
+        final Student petro = new Student("Petro", 35, 9.8);
+        final Student ivan = new Student("Ivan", 48, 7.5);
+        final Student olha = new Student("Olha", 31, 3.2);
+        final Student maxim = new Student("Maxim", 37, 8.9);
+
+
+        final Stream<Student> studentStream = Stream.of(vasyl, anna, petro, ivan, olha, maxim);
+
+        Function<Student, Person> studPersonConverter = student -> {
+            return new Person(student.getAge(), student.getName());
+        };
+
+        final List<Person> persons = studentStream.filter(s -> s.getGpa() > 5)
+                .peek(s -> System.out.println(s.getName()))
+                .map(studPersonConverter)
+                .peek(System.out::println)
+                .toList();
+
+        final List<Student> studs = List.of(vasyl, anna, petro, ivan, olha, maxim);
+
+        final long count = studs.stream().filter(s -> s.getGpa() > 5)
+                .peek(s -> System.out.println(s.getName()))
+                .map(studPersonConverter)
+                .peek(System.out::println)
+                .count();
+
+        final Optional<Person> max = studs.stream().filter(s -> s.getGpa() > 5)
+                .peek(s -> System.out.println(s.getName()))
+                .map(studPersonConverter)
+                .peek(System.out::println)
+                .max((s1, s2) -> s1.getAge() - s2.getAge());
+
+        final Person person = max.orElseThrow(() -> new Exception());
+
+        final Map<Double, Student> studentsMappedByGpa = studs.stream().filter(s -> s.getGpa() > 5)
+                .peek(s -> System.out.println(s.getName()))
+                .peek(System.out::println)
+                .collect(Collectors.toMap(student -> student.getGpa(),
+                        student -> student,
+                        (s1, s2) -> s1));
+
+        System.out.println(persons);
+
+        final Double gpaSum = studs.stream().filter(s -> s.getGpa() > 5)
+                .peek(s -> System.out.println(s.getName()))
+                .peek(System.out::println)
+                .reduce(0.0, (acc, student) -> acc + student.getGpa(),
+                        (sum, student) -> sum);
+
+        final Stream<Student> parallel = studs.stream().parallel();
+
+
+        final List<Double> list1 =
+                Stream.generate(Math::random).limit(100).filter(v -> v > 0.2).toList();
+
+        final List<Double> list2 =
+                Stream.generate(() -> {
+                    final double random = Math.random();
+                    System.out.println("generating : " + random);
+                    return random;
+                }).limit(20).filter(v -> {
+                    System.out.println("Filtering: " + v);
+                    return v > 0.2;
+                } ).toList();
+
+
+//        Consumer<Student> studentPrinter = student -> System.out.println(student);
+//        Consumer<Student> studentPrinter = System.out::println;
+        Consumer<Student> studentPrinter = Application::printStudent;
+        studentPrinter.accept(vasyl);
+
+        Supplier<Student> emptyStudentGenerator = Student::new;
+
+        final Student student1 = emptyStudentGenerator.get();
+
+//        final List<Student> studs = List.of(vasyl, anna, petro, ivan, olha, maxim);
+
+        Predicate<Student> bestCondition = s -> s.getGpa() > 8;
+
+        final List<Student> bestStudents = filterStudents(studs, bestCondition);
+        final List<Student> worstStudents = filterStudents(studs, s -> s.getGpa() < 5);
+
+
+
+
+        Function<Student, Person> studPersonConverter2 = student
+                -> new Person(student.getAge(), student.getName());
+
+        final Person john = convertStudent(new Student("John", 32), studPersonConverter);
+
+
+        MyFunc myFunc = () -> System.out.println("do smth"); // reference to an bject
+
+        myFunc.doSmth();
+        myFunc.doSmthWithInt(3);
+
+        // in out
+        List<Object> objects = new ArrayList<>();
+        List<Student> students = new ArrayList<>();
+
+        addStudentsToList(objects);
+        addStudentsToList(students);
+
+        final Container<Integer> intContainer = new Container<>(12);
+        final var stringContainer = new Container<String>("Hello");
+
+        final Container<Student> studentContainer = new Container<Student>(new Student("", 34));
+        Container container = studentContainer;
+
+        NumberContainer<Integer> intCont = new NumberContainer<>(34);
+//        intCont.setValue(23.4);
+        NumberContainer<? extends Number> numContainer = new NumberContainer<>(12.0);
+
+
+        NumberContainer<Double> doubleCont = new NumberContainer<>(34.0);
+
+
+        Container<? super Integer> intOrObjContainer = new Container<>(new Object());
+
+        // class A {}
+        // class B extends A {}
+        // A a = new B(); // inheritance
+        // B b = new A();
+
+//        int i1 = 10;
+//        final Integer i6 = Integer.valueOf(i1);
+//        Object i = i6;
+//        Object i = 10; // auto boxing
+//
+//        Integer i2 = 12;
+//        int i3 = i2; // auto unboxing
+
+//        final Object value = intContainer.getValue();
+//        final Object str = stringContainer.getValue();
+//        final Object studValue = student.getValue();
+        final Integer value = intContainer.getValue();
+        final String value1 = stringContainer.getValue();
+
+        System.out.println(intContainer instanceof Container);
+        System.out.println(stringContainer instanceof Container);
+
+
         Integer[][] edgeList = new Integer[][] {
                 {0, 1},
                 {1, 2},
@@ -82,12 +269,7 @@ public class Application {
         final int i5 = SearchUtils.binarySearch(intArr, 0, 0, intArr.length - 1);
 
 
-        final Student vasyl = new Student("Vasyl", 21, 8.9);
-        final Student anna = new Student("Anna", 22, 4.6);
-        final Student petro = new Student("Petro", 35, 9.8);
-        final Student ivan = new Student("Ivan", 48, 7.5);
-        final Student olha = new Student("Olha", 31, 3.2);
-        final Student maxim = new Student("Maxim", 37, 8.9);
+
 
         Comparator<Student> gpaBest = (s1, s2) -> (int) (10 * (s2.getGpa() - s1.getGpa()));
 
